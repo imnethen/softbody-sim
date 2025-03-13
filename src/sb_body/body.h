@@ -23,3 +23,15 @@ typedef struct SB_Constraint {
 
 bool SB_UpdateConstraint(SB_Constraint *constraint);
 bool SB_RenderConstraint(SB_Constraint *constraint, SDL_Renderer *renderer);
+
+
+typedef struct SB_Body {
+    int num_points;
+    SB_Point *points;
+    int num_constraints;
+    SB_Constraint *constraints;
+} SB_Body;
+
+SB_Body SB_CreateBodyCircle(int num_points, Vector center, float radius);
+void SB_UpdateBody(SB_Body *body, float deltatime);
+void SB_RenderBody(SB_Body *body, SDL_Renderer *renderer);

@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef VECTOR
-#define VECTOR
-
 typedef struct Vector {
     float x;
     float y;
@@ -16,5 +13,3 @@ float VectorDot(Vector a, Vector b);
 float VectorLenSq(Vector a);
 float VectorLen(Vector a);
 Vector VectorNormalized(Vector a);
-
-#endif

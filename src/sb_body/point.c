@@ -2,23 +2,23 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 
-Point SB_CreatePoint(float x, float y) {
-    return (Point) {
+SB_Point SB_CreatePoint(float x, float y) {
+    return (SB_Point) {
         (Vector){ x, y },
         (Vector){ x, y },
         (Vector){ 0., 0. },
     };
 }
 
-Point SB_CreatePointVec(Vector pos) {
-    return (Point) {
+SB_Point SB_CreatePointVec(Vector pos) {
+    return (SB_Point) {
         pos,
         pos,
         (Vector){ 0., 0. },
     };
 }
 
-void handle_borders(Point *point) {
+void handle_borders(SB_Point *point) {
     const float lower_border = 1080.;
     const float right_border = 1920.;
 
@@ -33,7 +33,7 @@ void handle_borders(Point *point) {
     }
 }
 
-bool SB_UpdatePoint(Point *point, float deltatime) {
+bool SB_UpdatePoint(SB_Point *point, float deltatime) {
     const float gravity = 0.02;
     Vector start_pos = point->pos;
 
@@ -51,7 +51,7 @@ bool SB_UpdatePoint(Point *point, float deltatime) {
     return true;
 }
 
-bool SB_RenderPoint(Point *point, SDL_Renderer *renderer) {
+bool SB_RenderPoint(SB_Point *point, SDL_Renderer *renderer) {
     const int point_size = 10;
 
     SDL_RenderPoint(renderer, point->pos.x, point->pos.y);

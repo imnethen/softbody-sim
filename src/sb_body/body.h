@@ -1,25 +1,25 @@
+#pragma once
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_events.h>
 #include "../vector/vector.h"
 
 
-typedef struct Point {
+typedef struct SB_Point {
     Vector pos;
     Vector last_pos;
     Vector acc;
-} Point;
+} SB_Point;
 
-Point SB_CreatePoint(float x, float y);
-Point SB_CreatePointVector(Vector pos);
-bool SB_UpdatePoint(Point *point, float deltatime);
-bool SB_RenderPoint(Point *point, SDL_Renderer *renderer);
+SB_Point SB_CreatePoint(float x, float y);
+SB_Point SB_CreatePointVector(Vector pos);
+bool SB_UpdatePoint(SB_Point *point, float deltatime);
+bool SB_RenderPoint(SB_Point *point, SDL_Renderer *renderer);
 
 
-typedef struct Constraint {
-    Point *pointA;
-    Point *pointB;
+typedef struct SB_Constraint {
+    SB_Point *pointA;
+    SB_Point *pointB;
     float length;
-} Constraint;
+} SB_Constraint;
 
-bool SB_UpdateConstraint(Constraint *constraint);
-bool SB_RenderConstraint(Constraint *constraint, SDL_Renderer *renderer);
+bool SB_UpdateConstraint(SB_Constraint *constraint);
+bool SB_RenderConstraint(SB_Constraint *constraint, SDL_Renderer *renderer);

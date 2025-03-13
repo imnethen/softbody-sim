@@ -2,7 +2,7 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
-bool SB_UpdateConstraint(Constraint *constraint) {
+bool SB_UpdateConstraint(SB_Constraint *constraint) {
     Vector posA = constraint->pointA->pos;
     Vector posB = constraint->pointB->pos;
 
@@ -30,7 +30,7 @@ bool SB_UpdateConstraint(Constraint *constraint) {
     return true;
 }
 
-bool SB_RenderConstraint(Constraint *constraint, SDL_Renderer *renderer) {
+bool SB_RenderConstraint(SB_Constraint *constraint, SDL_Renderer *renderer) {
     float xa = constraint->pointA->pos.x;
     float ya = constraint->pointA->pos.y;
     float xb = constraint->pointB->pos.x;

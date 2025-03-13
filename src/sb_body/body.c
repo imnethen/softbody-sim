@@ -1,7 +1,7 @@
 #include "body.h"
 #include <stdlib.h>
 
-// inits (app->num_points) points uniformally on a circle
+// inits (body->num_points) points uniformally on a circle
 void InitPointsCircle(SB_Body *body, Vector center, float radius) {
     const float tau = 6.2831853;
     for (int i = 0; i < body->num_points; i++) {

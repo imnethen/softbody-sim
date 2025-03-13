@@ -1,3 +1,4 @@
+#include "../sb_body/body.h"
 #include "app.h"
 #include <stdlib.h>
 #include <SDL3/SDL_timer.h>

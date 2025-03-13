@@ -7,11 +7,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
-add_subdirectory(src/app)
 add_subdirectory(src/vector)
+add_subdirectory(src/sb_body)
+add_subdirectory(src/sb_app)
 
 add_executable(softbody src/main.c)
 
 target_link_libraries(softbody PRIVATE SDL3::SDL3)
-target_link_libraries(softbody PUBLIC softbody_app)
 target_link_libraries(softbody PUBLIC vector)
+target_link_libraries(softbody PUBLIC sb_body)
+target_link_libraries(softbody PUBLIC sb_app)

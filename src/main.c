@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "app/app.h"
+#include "sb_app/app.h"
 
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;

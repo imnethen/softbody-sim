@@ -1,4 +1,5 @@
 #include "blob.h"
+#include "../vector/vector.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL3/SDL_render.h>
@@ -77,7 +78,7 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
         float area_error = blob->desired_volume - area;
         float offset_length = area_error * blob->scaling_factor;
 
-        printf("%f %f %f\n", area, blob->desired_volume, offset_length);
+        /*printf("%f %f %f\n", area, blob->desired_volume, offset_length);*/
 
         for (int i = 0; i < blob->num_points; i++) {
             Vector prev_pos = blob->points[(i - 1 + blob->num_points) % blob->num_points].pos;
@@ -85,6 +86,9 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
             Vector next_pos = blob->points[(i + 1) % blob->num_points].pos;
 
             Vector secant = VectorSub(next_pos, prev_pos);
+            if (VectorLenSq(secant) == 0.) {
+                continue;
+            }
             Vector normal = VectorNormalized((Vector){ -secant.y, secant.x });
             Vector scaled_normal = VectorMul(normal, -offset_length);
 
@@ -119,11 +123,20 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
 }
 
 void SB_RenderBlob(SB_Blob blob, SDL_Renderer *renderer) {
-    for (int i = 0; i < blob.num_points; i++) {
-        SB_RenderPoint(&blob.points[i], renderer);
-    }
+    /* for (int i = 0; i < blob.num_points; i++) { */
+    /*     SB_RenderPoint(&blob.points[i], renderer); */
+    /* } */
 
     for (int i = 0; i < blob.num_points; i++) {
         SDL_RenderLine(renderer, blob.points[i].pos.x, blob.points[i].pos.y, blob.points[(i + 1) % blob.num_points].pos.x, blob.points[(i + 1) % blob.num_points].pos.y);
     }
+
+    Vector midpoint = (Vector){ 0., 0. };
+    for (int i = 0; i < blob.num_points; i++) {
+        midpoint = VectorAdd(midpoint, blob.points[i].pos);
+    }
+    midpoint = VectorDiv(midpoint, (float)blob.num_points);
+
+    SDL_SetRenderDrawColorFloat(renderer, 1., 0.6, 1., 1.);
+    SDL_RenderDebugText(renderer, midpoint.x, midpoint.y, ":3");
 }

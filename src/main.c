@@ -46,7 +46,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate) {
-    SDL_SetRenderDrawColorFloat(renderer, 0., 0., 0., SDL_ALPHA_OPAQUE_FLOAT);
+    SDL_SetRenderDrawColorFloat(renderer, 0.16, 0.17, 0.2, SDL_ALPHA_OPAQUE_FLOAT);
     SDL_RenderClear(renderer);
 
     SDL_SetRenderDrawColorFloat(renderer, 1., 1., 1., SDL_ALPHA_OPAQUE_FLOAT);

@@ -12,6 +12,7 @@ typedef struct SB_App {
     InputController input_controller;
 
     SB_Blob blob;
+    SB_Point *held_point;
 } SB_App;
 
 bool SB_InitApp(SB_App **app) {
@@ -24,25 +25,33 @@ bool SB_InitApp(SB_App **app) {
     return true;
 }
 
+SB_Point* FindClosestPointToMouse(SB_App *app) {
+    int closest_index = 0;
+    float closest_dist = 1e9;
+
+    for (int i = 0; i < app->blob.num_points; i++) {
+        Vector pos = app->blob.points[i].pos;
+        float dist = VectorLen(VectorSub(pos, app->input_controller.mouse_pos));
+        if (dist < closest_dist) {
+            closest_dist = dist;
+            closest_index = i;
+        }
+    }
+
+    return &(app->blob.points[closest_index]);
+}
+
 bool SB_UpdateApp(SB_App *app, int cur_time_ns) {
     float deltatime = (float)(cur_time_ns - app->last_update_ns) / 1e6;
     app->last_update_ns = cur_time_ns;
 
     if (app->input_controller.left_mouse_pressed) {
-        int closest_index = 0;
-        float closest_dist = 1e9;
-
-        for (int i = 0; i < app->blob.num_points; i++) {
-            Vector pos = app->blob.points[i].pos;
-            float dist = VectorLen(VectorSub(pos, app->input_controller.mouse_pos));
-            /* printf("%f %f; %f %f; %f\n", pos.x, pos.y, app->input_controller.mouse_pos.x, app->input_controller.mouse_pos.y, dist); */
-            if (dist < closest_dist) {
-                closest_dist = dist;
-                closest_index = i;
-            }
+        if (app->held_point == NULL) {
+            app->held_point = FindClosestPointToMouse(app);
         }
-
-        app->blob.points[closest_index].pos = app->input_controller.mouse_pos;
+        app->held_point->pos = app->input_controller.mouse_pos;
+    } else {
+        app->held_point = NULL;
     }
 
     SB_UpdateBlob(&app->blob, deltatime);

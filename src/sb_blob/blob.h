@@ -22,6 +22,8 @@ typedef struct SB_Blob {
     float constraint_length;
     float desired_volume;
     float scaling_factor;
+
+    SDL_Texture* texture;
 } SB_Blob;
 
 SB_Blob SB_CreateBlob(int num_points, Vector center, float radius, float desired_volume, float scaling_factor);

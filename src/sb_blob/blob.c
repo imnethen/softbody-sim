@@ -1,9 +1,13 @@
 #include "blob.h"
 #include "../vector/vector.h"
+#include <SDL3/SDL_pixels.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_rect.h>
 
 // inits (blob->num_points) points uniformally on a circle
 void InitPointsCircle(SB_Blob *blob, Vector center, float radius) {
@@ -14,6 +18,27 @@ void InitPointsCircle(SB_Blob *blob, Vector center, float radius) {
         float y = SDL_sinf(angle) * radius + center.y;
         blob->points[i] = SB_CreatePoint(x, y);
     }
+}
+
+SDL_Texture* CreateTexture(SDL_Renderer *renderer) {
+    char *bmp_path = NULL;
+    SDL_asprintf(&bmp_path, "%s../resources/texture.bmp", SDL_GetBasePath());
+
+    SDL_Surface *surface = SDL_LoadBMP(bmp_path);
+    if (!surface) {
+        SDL_Log("Couldn't create surface:\n%s\n", SDL_GetError());
+        return NULL;
+    }
+    SDL_free(bmp_path);
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (!texture) {
+        SDL_Log("Couldn't create texture:\n%s\n", SDL_GetError());
+        return NULL;
+    }
+    SDL_DestroySurface(surface);
+
+    return texture;
 }
 
 SB_Blob SB_CreateBlob(int num_points, Vector center, float radius, float desired_volume, float scaling_factor) {
@@ -27,6 +52,8 @@ SB_Blob SB_CreateBlob(int num_points, Vector center, float radius, float desired
 
     const float tau = 6.2831853;
     blob.constraint_length = radius * SDL_sqrtf(2. * (1. - SDL_cosf(tau / (float)blob.num_points)));
+
+    blob.texture = NULL;
 
     return blob;
 }
@@ -52,7 +79,7 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
     memset(displacements, 0, blob->num_points * sizeof(Vector));
     memset(displacement_counts, 0, blob->num_points * sizeof(int));
 
-    const int num_iterations = 100;
+    const int num_iterations = 80;
     for (int it = 0; it < num_iterations; it++) {
         // distance constraints
         for (int i = 0; i < blob->num_points; i++) {
@@ -78,8 +105,6 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
         float area_error = blob->desired_volume - area;
         float offset_length = area_error * blob->scaling_factor;
 
-        /*printf("%f %f %f\n", area, blob->desired_volume, offset_length);*/
-
         for (int i = 0; i < blob->num_points; i++) {
             Vector prev_pos = blob->points[(i - 1 + blob->num_points) % blob->num_points].pos;
             Vector cur_pos = blob->points[i].pos;
@@ -91,10 +116,6 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
             }
             Vector normal = VectorNormalized((Vector){ -secant.y, secant.x });
             Vector scaled_normal = VectorMul(normal, -offset_length);
-
-            /* printf("%f %f %f %f\n", cur_pos.x, cur_pos.y, normal.x, normal.y); */
-            /* printf("%f %f %f %f\n", cur_pos.x, cur_pos.y, scaled_normal.x, scaled_normal.y); */
-            /* exit(0); */
 
             displacements[i] = VectorAdd(displacements[i], scaled_normal);
             displacement_counts[i]++;
@@ -122,21 +143,61 @@ void SB_UpdateBlob(SB_Blob *blob, float deltatime) {
     free(displacement_counts);
 }
 
+SDL_Vertex *GetVertices(SB_Blob blob) {
+    const float tau = 6.2831853;
+    SDL_Vertex *vertices = malloc(blob.num_points * sizeof(SDL_Vertex));
+
+    for (int i = 0; i < blob.num_points; i++) {
+        vertices[i] = (SDL_Vertex){
+            (SDL_FPoint){ blob.points[i].pos.x, blob.points[i].pos.y },
+            (SDL_FColor){ 1., 1., 1., 1. },
+            (SDL_FPoint){ SDL_cosf(tau * (float)i / blob.num_points) / 2. + 0.5, SDL_sinf(tau * (float)i / blob.num_points) / 2. + 0.5 },
+        };
+    }
+
+    return vertices;
+}
+
+int *GetIndices(SB_Blob blob) {
+    int *indices = malloc(3 * (blob.num_points - 2) * sizeof(int));
+
+    for (int i = 1; i + 1 < blob.num_points; i++) {
+        indices[3 * (i - 1) + 0] = 0;
+        indices[3 * (i - 1) + 1] = i;
+        indices[3 * (i - 1) + 2] = i + 1;
+    }
+
+    return indices;
+}
+
 void SB_RenderBlob(SB_Blob blob, SDL_Renderer *renderer) {
+    if (!blob.texture) {
+        blob.texture = CreateTexture(renderer);
+    }
+
     /* for (int i = 0; i < blob.num_points; i++) { */
     /*     SB_RenderPoint(&blob.points[i], renderer); */
     /* } */
 
-    for (int i = 0; i < blob.num_points; i++) {
-        SDL_RenderLine(renderer, blob.points[i].pos.x, blob.points[i].pos.y, blob.points[(i + 1) % blob.num_points].pos.x, blob.points[(i + 1) % blob.num_points].pos.y);
-    }
+/*     for (int i = 0; i < blob.num_points; i++) { */
+/*         SDL_RenderLine(renderer, blob.points[i].pos.x, blob.points[i].pos.y, blob.points[(i + 1) % blob.num_points].pos.x, blob.points[(i + 1) % blob.num_points].pos.y); */
+/*     } */
 
-    Vector midpoint = (Vector){ 0., 0. };
-    for (int i = 0; i < blob.num_points; i++) {
-        midpoint = VectorAdd(midpoint, blob.points[i].pos);
-    }
-    midpoint = VectorDiv(midpoint, (float)blob.num_points);
+    /* Vector midpoint = (Vector){ 0., 0. }; */
+    /* for (int i = 0; i < blob.num_points; i++) { */
+    /*     midpoint = VectorAdd(midpoint, blob.points[i].pos); */
+    /* } */
+    /* midpoint = VectorDiv(midpoint, (float)blob.num_points); */
 
-    SDL_SetRenderDrawColorFloat(renderer, 1., 0.6, 1., 1.);
-    SDL_RenderDebugText(renderer, midpoint.x, midpoint.y, ":3");
+    /* SDL_SetRenderDrawColorFloat(renderer, 1., 0.6, 1., 1.); */
+    /* SDL_RenderDebugText(renderer, midpoint.x, midpoint.y, ":3"); */
+    /* SDL_SetRenderDrawColorFloat(renderer, 1., 1., 1., 1.); */
+
+    SDL_Vertex *vertices = GetVertices(blob);
+    int *indices = GetIndices(blob);
+
+    SDL_RenderGeometry(renderer, blob.texture, vertices, blob.num_points, indices, 3 * (blob.num_points - 2));
+
+    free(vertices);
+    free(indices);
 }

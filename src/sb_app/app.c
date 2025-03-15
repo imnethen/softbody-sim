@@ -20,7 +20,7 @@ bool SB_InitApp(SB_App **app) {
 
     (*app)->last_update_ns = SDL_GetTicksNS();
     (*app)->input_controller.left_mouse_pressed = false;
-    (*app)->blob = SB_CreateBlob(60, (Vector){ 500., 500. }, 200., 125e3, 0.001);
+    (*app)->blob = SB_CreateBlob(60, (Vector){ 500., 500. }, 200., 125e3, 0.002);
 
     return true;
 }
